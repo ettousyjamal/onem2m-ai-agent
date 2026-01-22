@@ -1,14 +1,18 @@
-# Mobius IoT Platform
+# oneM2M AI Agent Platform
 
-Mobius is an open-source IoT platform implementing the oneM2M standard, providing a robust backend for managing IoT devices, data, and applications. This repository includes core server code, protocol proxies, data processing scripts, and resource management tools.
+An advanced IoT platform implementing the oneM2M standard with AI-powered DDoS protection and intelligent traffic management. This repository combines the Mobius oneM2M server with sophisticated MAPE-K (Monitor-Analyze-Plan-Execute-Knowledge) loop for cybersecurity protection and machine learning-based threat detection.
 
 ## System Architecture
 
 <div align="center">
-<img src="System-architecture.png" alt="Mobius System Architecture" width="800"/>
+<img src="System-architecture.png" alt="oneM2M AI Agent System Architecture" width="800"/>
 </div>
 
-The platform follows the oneM2M standard architecture with IN-CSE (Infrastructure Common Services Entity) implementation, enabling seamless communication between IoT devices, applications, and services.
+The platform integrates oneM2M-compliant IoT backend with AI-driven security, featuring:
+- **Mobius Core**: oneM2M IN-CSE implementation for IoT device management
+- **MAPE-K Protection**: AI-powered DDoS detection and traffic filtering
+- **Machine Learning Models**: Pre-trained Random Forest and XGBoost models for threat detection
+- **Comprehensive Monitoring**: Real-time metrics collection and analysis
 
 ## Table of Contents
 
@@ -16,8 +20,10 @@ The platform follows the oneM2M standard architecture with IN-CSE (Infrastructur
 - [Project Structure](#project-structure)
 - [Installation](#installation)
 - [Usage](#usage)
+- [MAPE-K Security System](#mapek-security-system)
+- [Machine Learning Models](#machine-learning-models)
 - [Configuration](#configuration)
-- [Data & Reports](#data--reports)
+- [Data & Analytics](#data--analytics)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -25,12 +31,27 @@ The platform follows the oneM2M standard architecture with IN-CSE (Infrastructur
 
 ## Features
 
+### Core oneM2M Platform
 - oneM2M-compliant IoT backend (Mobius core)
-- Protocol proxies: MQTT, CoAP, WebSocket
-- Secure communication (TLS/SSL support)
-- Data logging and metrics collection
+- Multi-protocol support: HTTP, CoAP, MQTT, WebSocket
+- Secure communication (TLS/SSL certificates included)
 - Resource creation and management tools
-- Automated report generation and visualization
+- Comprehensive data logging and metrics
+
+### AI-Powered Security
+- **MAPE-K Loop**: Monitor-Analyze-Plan-Execute-Knowledge framework
+- **Dual ML Models**: Random Forest + XGBoost ensemble for DDoS detection
+- **Real-time Traffic Filtering**: AI-based request analysis and blocking
+- **Adaptive Learning**: Incremental model updates and threshold optimization
+- **IoT Device Recognition**: Pattern-based device identification
+- **Rate Limiting**: Intelligent burst and frequency protection
+
+### Advanced Analytics
+- **Comprehensive Sensor Data**: 20+ sensor types with augmented information
+- **System Health Monitoring**: CPU, memory, network metrics
+- **Quality Metrics**: Data quality scoring and sensor health tracking
+- **Spatial Data**: Location-aware sensor positioning
+- **Jupyter Notebooks**: Model development and analysis notebooks
 
 ---
 
@@ -38,23 +59,31 @@ The platform follows the oneM2M standard architecture with IN-CSE (Infrastructur
 
 ```
 .
-├── app.js                  # Main entry point for Mobius server
-├── mobius/                 # Core oneM2M resource handlers
+├── mobius.js               # Main Mobius oneM2M server entry point
+├── app.js                  # Core Mobius application logic
+├── mobius/                 # oneM2M resource handlers and middleware
 ├── pxy_mqtt.js             # MQTT protocol proxy
-├── pxy_coap.js             # CoAP protocol proxy
+├── pxy_coap.js             # CoAP protocol proxy  
 ├── pxy_ws.js               # WebSocket proxy
 ├── subscription.js         # Subscription management
 ├── wdt.js                  # Watchdog timer
-├── APP/                    # Application scripts and tools
-│   ├── create_resources.py # OneM2M resource creation
-│   ├── simple_sender.py    # Data transmission script
-│   └── send_with_http.py   # HTTP data sender
-├── Data/                   # IoT datasets, metrics, and logs
-├── Reports/                # Report generation scripts and plots
+├── APP/                    # Application scripts and AI tools
+│   ├── main.py             # IoT data sender with MAPE-K protection
+│   ├── mapek_system.py     # Complete MAPE-K DDoS protection system
+│   ├── create_resources.py # oneM2M resource creation utility
+│   └── venv/               # Python virtual environment
+├── Models/                 # Pre-trained machine learning models
+│   ├── best_random_forest_model.joblib
+│   └── best_xgb_model.json
+├── notebooks/              # Jupyter notebooks for analysis
+│   ├── QoS_DDoS_Model.ipynb
+│   └── cicddos-model-dev.ipynb
+├── log/                    # System logs directory
 ├── conf.json               # Main configuration file
 ├── ca-crt.pem              # CA certificate
 ├── server-crt.pem          # Server certificate
 ├── server-key.pem          # Server private key
+├── package.json            # Node.js dependencies
 ├── LICENSE
 └── README.md
 ```
@@ -66,10 +95,10 @@ The platform follows the oneM2M standard architecture with IN-CSE (Infrastructur
 ### Prerequisites
 
 - Node.js (v14+ recommended)
-- Python 3.8+ (for data processing and reporting)
+- Python 3.8+ (for AI components and data processing)
 - npm (Node.js package manager)
 - MySQL Server
-- (Optional) Virtual environment for Python modules
+- Git
 
 ### Setup
 
@@ -86,9 +115,11 @@ The platform follows the oneM2M standard architecture with IN-CSE (Infrastructur
 
 3. **Set up Python environment:**
    ```bash
+   cd APP
    python3 -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install requests pandas scikit-learn numpy
+   pip install requests pandas scikit-learn numpy psutil joblib xgboost
+   cd ..
    ```
 
 4. **Set up MySQL Database:**
@@ -96,6 +127,12 @@ The platform follows the oneM2M standard architecture with IN-CSE (Infrastructur
    sudo mysql -e "CREATE DATABASE mobiusdb;"
    sudo mysql mobiusdb < mobius/mobiusdb.sql
    sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'admin';"
+   ```
+
+5. **Verify ML models are in place:**
+   ```bash
+   ls -la Models/
+   # Should show: best_random_forest_model.joblib and best_xgb_model.json
    ```
 
 ---
@@ -108,10 +145,11 @@ The platform follows the oneM2M standard architecture with IN-CSE (Infrastructur
 node mobius.js
 ```
 
-- The server will start using the configuration in `conf.json`.
+The server will start using the configuration in `conf.json`.
 - Default port: 7579
+- oneM2M CSE base: `http://localhost:7579/Mobius`
 
-### 2. Create OneM2M Resources
+### 2. Create oneM2M Resources
 
 ```bash
 # Create test AE and container
@@ -120,43 +158,110 @@ python APP/create_resources.py
 # Custom resources
 python APP/create_resources.py --ae-name "MyGreenhouse" --container-name "SensorData"
 
-# Remote server
+# Remote server deployment
 python APP/create_resources.py --remote
 ```
 
-### 3. Send Data to OneM2M
+### 3. Send IoT Data with AI Protection
 
 ```bash
-# Send single sample data
-python APP/simple_sender.py
+# Single data transmission with MAPE-K protection
+python APP/main.py --mode single
 
-# Send continuous data (10 samples, 5 seconds apart)
-python APP/simple_sender.py --mode continuous --count 10 --interval 5
+# Continuous data transmission (10 samples, 5 seconds apart)
+python APP/main.py --mode continuous --count 10 --interval 5
 
-# Send custom data (interactive)
-python APP/simple_sender.py --mode custom
+# Custom data input with augmented sensors
+python APP/main.py --mode custom
 
-# Remote server
-python APP/simple_sender.py --remote
+# Remote server deployment
+python APP/main.py --mode single --remote
+
+# Disable MAPE-K protection (for testing)
+python APP/main.py --mode single --no-mapek
 ```
 
-### 4. Generate Reports
+### 4. MAPE-K Security Management
 
 ```bash
-cd Reports
-python generate_reports.py
+# View MAPE-K system status and metrics
+python APP/main.py --mode status
+
+# Simulate DDoS attack for testing
+python APP/main.py --mode ddos-test
 ```
 
-- Plots and reports will be saved in `Reports/Plots/`.
+---
+
+## MAPE-K Security System
+
+The platform features a sophisticated MAPE-K (Monitor-Analyze-Plan-Execute-Knowledge) loop for intelligent DDoS protection:
+
+### Monitor Component
+- **Real-time Metrics**: CPU, memory, network performance
+- **Request Tracking**: RTT, success rates, request patterns
+- **System Health**: Comprehensive service monitoring
+
+### Analyzer Component  
+- **ML Ensemble**: Dual model approach (Random Forest + XGBoost)
+- **Feature Extraction**: 9-dimensional feature vector for each request
+- **Pattern Recognition**: IoT device behavior analysis
+- **Anomaly Detection**: Statistical and rule-based methods
+
+### Planner Component
+- **Decision Engine**: Multi-criteria decision making
+- **Threat Assessment**: Combined ML and rule-based scoring
+- **Adaptive Thresholds**: Dynamic threshold adjustment
+- **Knowledge Integration**: Learning from historical patterns
+
+### Executor Component
+- **Traffic Filtering**: Real-time request blocking
+- **IP Management**: Whitelist/blacklist with CIDR support
+- **Rate Limiting**: Burst and frequency control
+- **Auto-blocking**: Intelligent IP blocking with expiration
+
+### Knowledge Base
+- **Pattern Storage**: Historical DDoS patterns
+- **IoT Baselines**: Device behavior profiles
+- **Learning History**: Continuous improvement data
+- **Control Actions**: Audit trail of security decisions
+
+---
+
+## Machine Learning Models
+
+The platform utilizes pre-trained machine learning models for DDoS detection:
+
+### Model 1: Random Forest
+- **File**: `Models/best_random_forest_model.joblib`
+- **Purpose**: Primary DDoS classification
+- **Features**: Traffic patterns, request characteristics
+- **Fallback**: Isolation Forest if model unavailable
+
+### Model 2: XGBoost  
+- **File**: `Models/best_xgb_model.json`
+- **Purpose**: Ensemble DDoS detection
+- **Features**: Complementary feature set
+- **Fallback**: Local Outlier Factor if model unavailable
+
+### Ensemble Method
+- **Combination**: 0.5 × Model1 + 0.5 × Model2
+- **Output**: Anomaly score (0.0 - 1.0)
+- **Threshold**: Adaptive DDoS threshold (default: 0.7)
+- **Updates**: Incremental learning with new data
+
+### Model Development
+Jupyter notebooks are provided for model analysis and development:
+- `notebooks/QoS_DDoS_Model.ipynb`: QoS-based DDoS modeling
+- `notebooks/cicddos-model-dev.ipynb`: CIC-DDoS dataset development
 
 ---
 
 ## Configuration
 
-- Edit `conf.json` to set server parameters, database settings, and security options.
-- TLS/SSL certificates are in the project root (`ca-crt.pem`, `server-crt.pem`, `server-key.pem`).
+### Server Configuration
+Edit `conf.json` to set server parameters and database settings:
 
-Example `conf.json`:
 ```json
 {
     "csebaseport": "7579",
@@ -164,18 +269,57 @@ Example `conf.json`:
 }
 ```
 
+### MAPE-K Configuration
+The MAPE-K system includes configurable parameters:
+- `max_requests_per_minute`: Rate limiting threshold
+- `max_requests_per_hour`: Hourly request limits  
+- `burst_threshold`: Burst detection threshold
+- `block_duration`: IP block duration (seconds)
+- `ddos_threshold`: ML detection threshold
+
+### Security Certificates
+TLS/SSL certificates are included in the project root:
+- `ca-crt.pem`: Certificate Authority
+- `server-crt.pem`: Server certificate  
+- `server-key.pem`: Server private key
+
 ---
 
-## Data & Reports
+## Data & Analytics
 
-- **Data/**: Contains IoT datasets, metrics logs, and transmission metrics.
-- **Reports/**: Scripts and output plots for data analysis and visualization.
+### IoT Data Structure
+The platform sends comprehensive sensor data including:
+- **Environmental Sensors**: Temperature, humidity, light, soil moisture, pH, nutrients
+- **Augmented Sensors**: CO2, air pressure, wind speed, UV index, soil temperature
+- **System Information**: Device ID, firmware version, battery, signal strength
+- **Location Data**: Zone ID, coordinates, rack positioning
+- **Quality Metrics**: Data quality scores, sensor health, calibration status
+
+### Monitoring Data
+- **Request Logs**: Complete request/response tracking
+- **Performance Metrics**: RTT, throughput, success rates
+- **Security Events**: Blocked requests, DDoS attempts
+- **System Health**: CPU, memory, disk usage
+
+### Export Capabilities
+The MAPE-K system exports comprehensive data:
+- **Metrics History**: JSON format with timestamps
+- **Knowledge Base**: Patterns and learning data
+- **Statistics**: Real-time and historical statistics
+- **Model Updates**: Incremental learning data
 
 ---
 
 ## Contributing
 
-Contributions are welcome! Please open issues or submit pull requests for bug fixes, new features, or documentation improvements.
+Contributions are welcome! Please focus on:
+- **Security Enhancements**: New detection algorithms, threat patterns
+- **ML Improvements**: Model accuracy, feature engineering
+- **IoT Integration**: Additional sensor types, device protocols
+- **Performance**: Optimization, scalability improvements
+- **Documentation**: Examples, tutorials, API docs
+
+Please open issues or submit pull requests for bug fixes, new features, or documentation improvements.
 
 ---
 
@@ -185,7 +329,7 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ---
 
-# Legacy/Original Mobius Documentation
+# Legacy Mobius Documentation
 
 # Mobius
 oneM2M IoT Server Platform
@@ -311,3 +455,10 @@ This is the list of library dependencies for Mobius
 - websocket
 - xml2js
 - xmlbuilder
+
+## Document
+If you want more details please download the full [installation guide document](https://github.com/IoTKETI/Mobius/raw/master/doc/Installation%20Guide_Mobius_v2.0.0_EN(170718).pdf).
+
+# Author
+Jaeho Kim (jhkim@keti.re.kr)
+Il Yeup Ahn (iyahn@keti.re.kr)
